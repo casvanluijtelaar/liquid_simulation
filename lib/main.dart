@@ -1,66 +1,84 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:funvas/funvas.dart';
 import 'package:liquid_simulation/fluid.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() => runApp(MaterialApp(home: MyApp()));
+
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
 }
 
-extension NumExtension<T extends num> on num {
-  /// maps a number from an old range to a new range
-  double map(T oldStart, T oldEnd, T newStart, T newEnd) {
-    final slope = (newEnd - newStart) / (oldEnd - oldStart);
-    return newStart + slope * (this - oldStart);
+class _MyAppState extends State<MyApp> {
+  late LiquidSimulation funvas;
+  int size = 128;
+
+  @override
+  void initState() {
+    super.initState();
+    funvas = LiquidSimulation(scale: 4.0, size: size);
   }
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final scale = 4.0;
-      final size = (constraints.maxHeight / scale).round();
+    size = MediaQuery.of(context).size.height.toInt();
 
-      return SizedBox.expand(
-        child: FunvasContainer(
-          funvas: LiquidSimulation(scale, size),
+    return SizedBox.expand(
+      child: GestureDetector(
+        onPanStart: (d) => funvas.updateFluidPosition(
+          active: true,
+          sourcePosition: d.globalPosition,
         ),
-      );
-    });
+        onPanUpdate: (d) => funvas.updateFluidPosition(
+          sourcePosition: d.globalPosition,
+          velocity: d.delta,
+        ),
+        onPanEnd: (d) => funvas.updateFluidPosition(
+          active: false,
+        ),
+        child: FunvasContainer(
+          funvas: funvas,
+        ),
+      ),
+    );
   }
 }
 
 class LiquidSimulation extends Funvas {
-  LiquidSimulation(this.scale, this.size);
+  LiquidSimulation({
+    required this.scale,
+    required this.size,
+  });
 
   final double scale;
   final int size;
 
-  late Fluid fluid = Fluid(0.2, 0, 0.0000001, scale, size);
+  late bool active = false;
+  late Offset sourcePosition = Offset.zero;
+  late Offset velocity = Offset.zero;
 
+  late Fluid fluid = Fluid(0.2, 0, 0.0000001, scale, size);
   late double width = size * scale;
   late double height = size * scale;
 
+  void updateFluidPosition({
+    bool? active,
+    Offset? sourcePosition,
+    Offset? velocity,
+  }) {
+    if (active != null) this.active = active;
+    if (sourcePosition != null) this.sourcePosition = sourcePosition;
+    if (velocity != null) this.velocity = velocity;
+  }
+
   @override
   void u(double t) {
-    final cx = (0.5 * width / scale).round();
-    final cy = (0.5 * height / scale).round();
+    if (active) {
+      final x = (sourcePosition.dx / scale).round();
+      final y = (sourcePosition.dy / scale).round();
 
-    for (int i = -1; i <= 1; i++) {
-      for (int j = -1; j <= 1; j++) {
-        fluid.addDensity(
-          cx + i,
-          cy + j,
-          (50 + Random().nextInt(100)).toDouble(),
-        );
-      }
-    }
-    for (int i = 0; i < 2; i++) {
-      fluid.addVelocity(cx, cy, 2, 2);
+      fluid.addDensity(x, y, 1000);
+      fluid.addVelocity(x, y, velocity.dx, velocity.dy);
     }
 
     fluid.step();

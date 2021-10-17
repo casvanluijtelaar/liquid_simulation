@@ -1,5 +1,5 @@
 import 'package:flutter/painting.dart';
-import 'package:liquid_simulation/main.dart';
+import 'package:liquid_simulation/extension.dart';
 
 class Fluid {
   static const int iter = 8;
@@ -81,9 +81,8 @@ class Fluid {
         );
 
         final color = ((d + 50) % 255).floor();
-        final paint = Paint()..color = Color.fromRGBO(color, color, color, density);
-
-      
+        final paint = Paint()
+          ..color = Color.fromRGBO(color, color, color, density);
 
         c.drawRect(rect, paint);
       }
