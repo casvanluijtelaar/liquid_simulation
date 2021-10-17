@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:funvas/funvas.dart';
 import 'package:liquid_simulation/fluid.dart';
 
-void main() => runApp(MaterialApp(home: MyApp()));
+void main() => runApp(MaterialApp(
+      home: MyApp(),
+      debugShowCheckedModeBanner: false,
+    ));
 
 class MyApp extends StatefulWidget {
   @override
