@@ -90,13 +90,6 @@ class Fluid {
     }
   }
 
-  void fadeD() {
-    for (int i = 0; i < this.density.length; i++) {
-      double d = density[i];
-      density[i] = (d - 0.005).clamp(0, 255);
-    }
-  }
-
   int IX(int x, int y) {
     x = x.clamp(0, size - 1);
     y = y.clamp(0, size - 1);

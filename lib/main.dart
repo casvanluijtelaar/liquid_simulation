@@ -11,18 +11,17 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late LiquidSimulation funvas;
-  Offset size = Offset(100, 100);
+  int size = 128;
 
   @override
   void initState() {
     super.initState();
-    funvas = LiquidSimulation(size: size);
+    funvas = LiquidSimulation(scale: 4.0, size: size);
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    this.size = Offset(size.width, size.height);
+    size = MediaQuery.of(context).size.height.toInt();
 
     return SizedBox.expand(
       child: GestureDetector(
@@ -47,16 +46,20 @@ class _MyAppState extends State<MyApp> {
 
 class LiquidSimulation extends Funvas {
   LiquidSimulation({
+    required this.scale,
     required this.size,
   });
 
-  final Offset size;
+  final double scale;
+  final int size;
 
   late bool active = false;
   late Offset sourcePosition = Offset.zero;
   late Offset velocity = Offset.zero;
 
-  late Fluid fluid = Fluid(0.2, 0, 0.0000001, size.dx.toInt(), size.dy.toInt());
+  late Fluid fluid = Fluid(0.2, 0, 0.0000001, scale, size);
+  late double width = size * scale;
+  late double height = size * scale;
 
   void updateFluidPosition({
     bool? active,
@@ -71,21 +74,14 @@ class LiquidSimulation extends Funvas {
   @override
   void u(double t) {
     if (active) {
-      fluid.addDensity(
-        sourcePosition.dx.floor(),
-        sourcePosition.dy.floor(),
-        1000,
-      );
-      fluid.addVelocity(
-        sourcePosition.dx.floor(),
-        sourcePosition.dy.floor(),
-        velocity.dx,
-        velocity.dy,
-      );
+      final x = (sourcePosition.dx / scale).round();
+      final y = (sourcePosition.dy / scale).round();
+
+      fluid.addDensity(x, y, 1000);
+      fluid.addVelocity(x, y, velocity.dx, velocity.dy);
     }
 
     fluid.step();
     fluid.renderD(c);
-    //fluid.fadeD();
   }
 }
