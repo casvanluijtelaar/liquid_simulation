@@ -21,8 +21,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size.height.toInt();
-
     return SizedBox.expand(
       child: GestureDetector(
         onPanStart: (d) => funvas.updateFluidPosition(
